@@ -53,10 +53,16 @@
             <!-- Right Column: Results -->
             <section class="results-panel glass-panel">
                 <h2>Resumen de Valoración</h2>
+
+                <div class="results-metadata" style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.95rem;">
+                    <p><strong>Modo de Entrada Utilizado:</strong> <span id="metaMode">-</span></p>
+                    <p id="metaConfigRow" style="display: none;"><strong>Datos de Configuración:</strong> <span id="metaConfig">-</span></p>
+                </div>
+
                 <div class="results-summary" id="resultsSummary">
                     <div class="summary-card">
-                        <h3>Resultado por Kilo Final</h3>
-                        <p id="finalPrice" class="price-big">$0.00</p>
+                        <h3 style="color: var(--text-main); font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Resultado por Kilo</h3>
+                        <p id="finalPrice" class="price-big" style="color: var(--warning);">$0.00</p>
                     </div>
                 </div>
 

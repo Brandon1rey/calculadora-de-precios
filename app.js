@@ -35,6 +35,9 @@ const totalDivisorValueEl = document.getElementById("totalDivisorValue");
 const baseDivisorTypeEl = document.getElementById("baseDivisorType");
 const thAmountEl = document.getElementById("thAmount");
 const resultsBody = document.getElementById("resultsBody");
+const metaModeEl = document.getElementById("metaMode");
+const metaConfigRow = document.getElementById("metaConfigRow");
+const metaConfigEl = document.getElementById("metaConfig");
 
 // DOM Elements - Manual Price Modal
 const modal = document.getElementById("priceModal");
@@ -296,6 +299,10 @@ function calculateEstimate() {
         let factorCat1 = 1 - factorCat2;
         let totalAccounted = 0;
 
+        metaModeEl.innerText = "Porcentajes Ponderados";
+        metaConfigRow.style.display = "block";
+        metaConfigEl.innerText = `Porcentaje Global Categoría 2: ${globalCat2}%`;
+
         mainCalibersCat1.forEach(c => {
             let pVal = parseFloat(document.getElementById(`cal_${c}`).value) || 0;
             if (pVal !== 0) {
@@ -338,6 +345,9 @@ function calculateEstimate() {
         finalPriceEl.innerText = formatCurrency(resultado);
     } else {
         // MODO B
+        metaModeEl.innerText = "Kilogramos Directos";
+        metaConfigRow.style.display = "none";
+
         mainCalibersCat1.forEach(c => {
             let kg = parseFloat(document.getElementById(`cat1_${c}`).value) || 0;
             if (kg !== 0) {
