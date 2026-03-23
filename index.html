@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Precios de Aguacate</title>
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <!-- SheetJS for Excel Reading -->
@@ -18,7 +19,8 @@
                 <p>Módulo de cálculo de Resultado por Kilo</p>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button id="btnUploadExcel" class="btn-accent" style="background:#0284c7; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4);">Subir Excel</button>
+                <!-- Updated button to fit the soft avocado theme -->
+                <button id="btnUploadExcel" class="btn-yellow">Subir Excel</button>
                 <button id="btnEditPrices" class="btn-primary">Ver/Editar Precios</button>
             </div>
         </header>
@@ -43,8 +45,14 @@
                     Porcentajes generales por calibre (división automática).
                 </p>
 
-                <div id="dynamicFormArea">
-                    <!-- Form injected via JS based on Mode -->
+                <!-- This section is dynamically filled with HTML tables by app.js -->
+                <div id="dynamicFormArea"></div>
+
+                <!-- Live Summation Engine -->
+                <div id="sumCheckContainer" class="sum-check-box">
+                    <span>Suma Total Muestreada: </span>
+                    <strong id="liveSumTotal">0</strong><span id="liveSumUnit">%</span>
+                    <p id="sumWarning" class="sum-warning">Verificando sumatoria...</p>
                 </div>
                 
                 <button id="btnCalculate" class="btn-block btn-accent">Calcular Resultado por Kilo</button>
@@ -119,13 +127,13 @@
                 <span class="close-btn excel-close-btn">&times;</span>
             </div>
             <div class="modal-body">
-                <div class="highlight-group" style="background: rgba(2, 132, 199, 0.1); border-color: rgba(2, 132, 199, 0.4); margin-bottom: 20px;">
-                    <h3 style="color: #38bdf8; margin-bottom: 10px; font-size: 1rem;">Formato Requerido</h3>
+                <div class="highlight-group" style="margin-bottom: 20px;">
+                    <h3 style="color: var(--accent-hover); margin-bottom: 10px; font-size: 1rem;">Formato Requerido</h3>
                     <p style="font-size: 0.9rem; margin-bottom: 10px; line-height: 1.4;">
                         Tu archivo Excel debe contener la información en la primera hoja.<br>
                         Debe tener 2 columnas con los siguientes encabezados exactos en la primera fila:
                     </p>
-                    <ul style="font-size: 0.9rem; list-style-position: inside; color: #bae6fd; margin-bottom: 10px;">
+                    <ul style="font-size: 0.9rem; list-style-position: inside; color: var(--text-main); margin-bottom: 10px;">
                         <li><strong>Concepto</strong> (Ej: "32 CAT 1 USA", "TERCERA")</li>
                         <li><strong>Precio</strong> (Ej: 19.00, 1.00)</li>
                     </ul>
@@ -135,13 +143,13 @@
                 </div>
                 
                 <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display:none;">
-                <label for="excelFileInput" style="display: block; text-align: center; padding: 2rem; border: 2px dashed #38bdf8; border-radius: 8px; cursor: pointer; transition: 0.3s; background: rgba(0,0,0,0.2);">
-                    <h3 style="color: #38bdf8;">Haz clic aquí para seleccionar tu archivo Excel</h3>
+                <label for="excelFileInput" style="display: block; text-align: center; padding: 2rem; border: 2px dashed var(--accent-primary); border-radius: 8px; cursor: pointer; transition: 0.3s; background: #fff;">
+                    <h3 style="color: var(--accent-hover);">Haz clic aquí para seleccionar tu archivo Excel</h3>
                     <p id="fileNameDisplay" style="margin-top: 10px; color: var(--text-muted);">Ej. Precios_Semana.xlsx</p>
                 </label>
             </div>
             <div class="modal-footer">
-                <button id="btnProcessExcel" class="btn-accent" style="background:#0284c7;" disabled>Actualizar Precios</button>
+                <button id="btnProcessExcel" class="btn-accent" disabled>Actualizar Precios</button>
             </div>
         </div>
     </div>

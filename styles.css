@@ -1,22 +1,26 @@
-/* ==== CSS Variables & Theming ==== */
+/* ==== Soft Avocado Theme ==== */
 :root {
-    --bg-dark: #0f172a;
-    --bg-glass: rgba(30, 41, 59, 0.7);
-    --border-glass: rgba(255, 255, 255, 0.1);
+    --bg-main: #f4f6f0;           /* Soft pale green/cream background */
+    --bg-glass: rgba(255, 255, 255, 0.7);
+    --border-glass: rgba(123, 160, 91, 0.3);
     
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
+    --text-main: #4a4843;         /* Soft dark brown/olive for reading */
+    --text-muted: #7d7a71;
     
-    --accent-primary: #10b981; /* Emerald green (Avocado vibe) */
-    --accent-hover: #059669;
-    --accent-glow: rgba(16, 185, 129, 0.4);
+    --accent-primary: #7ba05b;    /* Avocado green */
+    --accent-hover: #608045;
+    --accent-glow: rgba(123, 160, 91, 0.3);
     
-    --danger: #ef4444;
-    --warning: #f59e0b;
-    --card-bg: rgba(15, 23, 42, 0.6);
+    --warning: #d4ac4a;           /* Avocado yellow/flesh */
+    --accent-brown: #8b7355;      /* Avocado pit brown */
+    --danger: #cc6b5c;            /* Soft red */
+    --danger-bg: #faeaea;
+    --success: #69994c;
+    --success-bg: #eefaeb;
+    
+    --card-bg: rgba(255, 255, 255, 0.85);
 }
 
-/* ==== Global Styles ==== */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -25,7 +29,7 @@
 
 body {
     font-family: 'Outfit', sans-serif;
-    background: radial-gradient(circle at top right, #1e293b, #020617);
+    background: var(--bg-main);
     color: var(--text-main);
     min-height: 100vh;
     padding: 2rem;
@@ -39,7 +43,7 @@ body {
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border-glass);
     border-radius: 16px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    box-shadow: 0 8px 32px 0 rgba(74, 72, 67, 0.05); /* very soft brown shadow */
 }
 
 /* ==== Layout ==== */
@@ -75,7 +79,7 @@ header p {
 
 .main-grid {
     display: grid;
-    grid-template-columns: 350px 1fr;
+    grid-template-columns: 380px 1fr;
     gap: 2rem;
     align-items: start;
 }
@@ -87,8 +91,8 @@ header p {
 
 .config-panel h2 {
     font-size: 1.25rem;
-    margin-bottom: 1.5rem;
-    color: var(--accent-primary);
+    margin-bottom: 1rem;
+    color: var(--accent-brown); /* Softer reading headers */
     border-bottom: 1px solid var(--border-glass);
     padding-bottom: 0.5rem;
 }
@@ -97,11 +101,11 @@ hr {
     border: 0;
     height: 1px;
     background: var(--border-glass);
-    margin: 2rem 0;
+    margin: 1.5rem 0;
 }
 
 .form-group, .form-row {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -121,11 +125,11 @@ label {
 
 input[type="number"] {
     width: 100%;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
     border: 1px solid var(--border-glass);
-    background: rgba(0, 0, 0, 0.2);
-    color: #fff;
+    background: #fff;
+    color: var(--text-main);
     font-family: inherit;
     font-size: 1rem;
     outline: none;
@@ -138,26 +142,84 @@ input[type="number"]:focus {
 }
 
 .highlight-group {
-    background: rgba(16, 185, 129, 0.1);
+    background: rgba(123, 160, 91, 0.1); /* pale avocado */
     padding: 1rem;
     border-radius: 8px;
-    border: 1px solid var(--accent-glow);
+    border: 1px solid var(--border-glass);
 }
-
 .highlight-group small {
-    color: var(--accent-primary);
+    color: var(--accent-hover);
     font-size: 0.8rem;
     margin-top: 0.25rem;
 }
 
-.calibers-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+/* ==== Input Tables (NEW) ==== */
+.input-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 0.5rem;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-glass);
+}
+.input-table th, .input-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.input-table th {
+    background: rgba(139, 115, 85, 0.08); /* slight brown tint */
+    font-size: 0.9rem;
+    color: var(--accent-brown);
+    font-weight: 600;
+}
+.input-table .sub-header {
+    background: rgba(123, 160, 91, 0.1);
+    font-size: 0.85rem;
+    color: var(--accent-primary);
+    text-transform: uppercase;
+    text-align: center;
+}
+.input-table td {
+    font-size: 0.95rem;
+    vertical-align: middle;
+}
+.input-table input[type="number"] {
+    text-align: right;
+    max-width: 120px;
+    float: right;
 }
 
-.calibers-grid .form-group {
-    margin-bottom: 0;
+/* ==== Summation Checker Box (NEW) ==== */
+.sum-check-box {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    background: var(--card-bg);
+    border: 2px solid transparent;
+    transition: all 0.3s;
+}
+.sum-check-box.status-ok {
+    border-color: var(--success);
+    background: var(--success-bg);
+}
+.sum-check-box.status-error {
+    border-color: var(--danger);
+    background: var(--danger-bg);
+}
+.sum-check-box span {
+    font-size: 1.1rem;
+    color: var(--text-main);
+}
+.sum-check-box strong {
+    font-size: 1.5rem;
+}
+.sum-warning {
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    font-weight: 500;
 }
 
 /* Toggle Switch */
@@ -182,17 +244,14 @@ input[type="number"]:focus {
     width: 50px;
     height: 26px;
 }
-
 .switch input { opacity: 0; width: 0; height: 0; }
-
 .slider {
     position: absolute;
     cursor: pointer;
     top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #334155;
+    background-color: var(--text-muted);
     transition: .4s;
 }
-
 .slider:before {
     position: absolute;
     content: "";
@@ -203,21 +262,14 @@ input[type="number"]:focus {
     background-color: white;
     transition: .4s;
 }
-
 input:checked + .slider {
     background-color: var(--accent-primary);
 }
-
 input:checked + .slider:before {
     transform: translateX(24px);
 }
-
-.slider.round {
-    border-radius: 34px;
-}
-.slider.round:before {
-    border-radius: 50%;
-}
+.slider.round { border-radius: 34px; }
+.slider.round:before { border-radius: 50%; }
 
 /* Buttons */
 button {
@@ -228,34 +280,47 @@ button {
     transition: all 0.3s ease;
     border: none;
 }
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
 
-.btn-primary, .btn-accent {
+.btn-primary, .btn-accent, .btn-yellow {
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
     color: #fff;
 }
 
 .btn-primary {
-    background: #334155;
-    border: 1px solid #475569;
+    background: var(--accent-brown);
 }
-.btn-primary:hover {
-    background: #475569;
+.btn-primary:hover:not(:disabled) {
+    background: #735d43;
 }
 
 .btn-accent {
     background: var(--accent-primary);
     box-shadow: 0 4px 15px var(--accent-glow);
 }
-.btn-accent:hover {
+.btn-accent:hover:not(:disabled) {
     background: var(--accent-hover);
     transform: translateY(-2px);
+}
+
+.btn-yellow {
+    background: var(--warning);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(212, 172, 74, 0.4);
+}
+.btn-yellow:hover:not(:disabled) {
+    background: #c29d43;
 }
 
 .btn-block {
     display: block;
     width: 100%;
-    margin-top: 1.5rem;
+    margin-top: 1rem;
     padding: 1rem;
     font-size: 1.1rem;
 }
@@ -271,6 +336,7 @@ button {
 .results-panel h2 {
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
+    color: var(--accent-brown);
 }
 
 .results-summary {
@@ -280,65 +346,55 @@ button {
 
 .summary-card {
     flex: 1;
-    background: var(--card-bg);
-    border: 1px solid var(--accent-primary);
+    background: #fff;
+    border: 2px solid var(--warning);
     padding: 1.5rem;
     border-radius: 12px;
     text-align: center;
-}
-
-.summary-card h3 {
-    font-size: 1rem;
-    color: var(--text-muted);
-    font-weight: 500;
-    margin-bottom: 0.5rem;
+    box-shadow: 0 4px 15px rgba(212, 172, 74, 0.15);
 }
 
 .price-big {
     font-size: 2.5rem;
     font-weight: 700;
-    color: var(--accent-primary);
+    color: var(--warning);
 }
 
 /* Table */
 .results-table-container {
     overflow-x: auto;
-    background: rgba(0,0,0,0.15);
+    background: #fff;
     border-radius: 12px;
     border: 1px solid var(--border-glass);
 }
 
-table {
+table#resultsTable {
     width: 100%;
     border-collapse: collapse;
 }
 
-th, td {
+table#resultsTable th, table#resultsTable td {
     padding: 1rem;
     text-align: left;
-    border-bottom: 1px solid var(--border-glass);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
-th {
-    background: rgba(255,255,255,0.05);
+table#resultsTable th {
+    background: rgba(139, 115, 85, 0.05);
     font-weight: 600;
-    color: var(--text-muted);
+    color: var(--accent-brown);
 }
 
-td {
+table#resultsTable td {
     font-size: 0.95rem;
 }
 
-.row-cat1 { color: #fff; }
-.row-cat2 { color: var(--warning); }
-.row-other { color: #a78bfa; }
-
 tfoot th {
-    font-size: 1.25rem;
-    color: #fff;
-    background: rgba(16, 185, 129, 0.1);
+    font-size: 1.15rem;
+    color: var(--text-main);
+    background: rgba(123, 160, 91, 0.1);
 }
-tfoot #netPrice {
+tfoot #totalMoneyValue, tfoot #totalDivisorValue {
     color: var(--accent-primary);
     font-weight: 700;
 }
@@ -353,16 +409,16 @@ tfoot #netPrice {
     width: 100%; 
     height: 100%; 
     overflow: auto; 
-    background-color: rgba(0,0,0,0.6); 
+    background-color: rgba(74, 72, 67, 0.6); 
     backdrop-filter: blur(5px);
 }
 
 .modal-content {
-    background-color: var(--bg-dark);
+    background-color: var(--bg-main);
     margin: 5% auto;
     padding: 0;
     width: 90%;
-    max-width: 600px;
+    max-width: 650px;
     animation: modalSlideIn 0.3s ease-out;
 }
 
@@ -387,7 +443,7 @@ tfoot #netPrice {
 }
 
 .close-btn:hover {
-    color: #fff;
+    color: var(--text-main);
 }
 
 .modal-body {
@@ -403,6 +459,8 @@ tfoot #netPrice {
     margin-bottom: 1rem;
     color: var(--accent-primary);
     font-size: 1.1rem;
+    border-bottom: 1px solid var(--border-glass);
+    padding-bottom: 0.25rem;
 }
 
 .price-grid {
