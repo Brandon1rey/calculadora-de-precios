@@ -344,27 +344,65 @@ function setupEventListeners() {
         excelModal.style.display = "none";
     });
 
-    // PDF Export functionality
+    // Bulletproof PDF Export functionality
     btnExportPDF.addEventListener("click", () => {
         let uName = pdfFileName.value.trim();
         let fileName = uName ? `${uName}.pdf` : `Reporte_Valoracion_Aguacate_${Date.now()}.pdf`;
 
-        // Configure options
-        let opt = {
-            margin:       10,
-            filename:     fileName,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, logging: false },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
+        // UI Feedback
+        let originalText = btnExportPDF.innerText;
+        btnExportPDF.innerText = "Exportando...";
+        btnExportPDF.disabled = true;
 
-        // Fire export
-        html2pdf().set(opt).from(pdfPrintArea).save().then(() => {
-            // Success
-        }).catch((err) => {
-            console.error("PDF Export error: ", err);
-            alert("Hubo un error al exportar el PDF. Por favor intenta de nuevo.");
-        });
+        // Force desktop width for high-quality structured print even on phones
+        let originalWidth = pdfPrintArea.style.width;
+        let originalMaxWidth = pdfPrintArea.style.maxWidth;
+        let originalBackground = pdfPrintArea.style.background;
+        
+        pdfPrintArea.style.width = "850px";
+        pdfPrintArea.style.maxWidth = "850px";
+        pdfPrintArea.style.background = "#ffffff"; // Force solid white for PDF
+
+        setTimeout(() => {
+            html2canvas(pdfPrintArea, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: "#ffffff"
+            }).then(canvas => {
+                // Restore UI
+                pdfPrintArea.style.width = originalWidth;
+                pdfPrintArea.style.maxWidth = originalMaxWidth;
+                pdfPrintArea.style.background = originalBackground;
+
+                // Build PDF
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgData = canvas.toDataURL('image/png');
+                
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                // margin of 10mm each side
+                const margin = 10;
+                const printWidth = pdfWidth - (margin * 2);
+
+                const imgProps = pdf.getImageProperties(imgData);
+                const printHeight = (imgProps.height * printWidth) / imgProps.width;
+
+                pdf.addImage(imgData, 'PNG', margin, margin, printWidth, printHeight);
+                pdf.save(fileName);
+
+                btnExportPDF.innerText = originalText;
+                btnExportPDF.disabled = false;
+            }).catch(err => {
+                console.error("PDF Export error: ", err);
+                // Recovery 
+                pdfPrintArea.style.width = originalWidth;
+                pdfPrintArea.style.maxWidth = originalMaxWidth;
+                pdfPrintArea.style.background = originalBackground;
+                btnExportPDF.innerText = originalText;
+                btnExportPDF.disabled = false;
+                alert("Hubo un error al crear el PDF. Esto puede suceder por bloqueos de navegador. Intenta reiniciar la página.");
+            });
+        }, 150); // slight delay to allow CSS reflow
     });
 }
 
