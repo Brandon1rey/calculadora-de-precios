@@ -20,6 +20,7 @@ const modeDesc = document.getElementById("modeDescription");
 const dynamicFormArea = document.getElementById("dynamicFormArea");
 
 const btnCalculate = document.getElementById("btnCalculate");
+const btnClearData = document.getElementById("btnClearData");
 const finalPriceEl = document.getElementById("finalPrice");
 const totalMoneyValueEl = document.getElementById("totalMoneyValue");
 const totalDivisorValueEl = document.getElementById("totalDivisorValue");
@@ -270,6 +271,22 @@ function setupEventListeners() {
     });
 
     btnCalculate.addEventListener("click", calculateEstimate);
+
+    btnClearData.addEventListener("click", () => {
+        document.querySelectorAll(".live-sum-item").forEach(input => input.value = "");
+        const globalCat2 = document.getElementById("globalCat2");
+        if (globalCat2) globalCat2.value = "";
+        const targetTotalKg = document.getElementById("targetTotalKg");
+        if (targetTotalKg) targetTotalKg.value = "";
+        
+        performLiveSumCheck();
+        
+        resultsBody.innerHTML = "";
+        totalMoneyValueEl.innerText = "$0.00";
+        totalDivisorValueEl.innerText = "0.00";
+        finalPriceEl.innerText = "$0.00";
+        btnExportPDF.disabled = true;
+    });
 
     btnEditPrices.addEventListener("click", () => {
         buildPriceEditor();
