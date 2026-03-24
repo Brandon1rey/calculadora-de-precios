@@ -63,11 +63,21 @@ function renderForm() {
     let headerAmount = isModeB ? "Cantidad (Kg)" : "Cantidad (%)";
 
     if (!isModeB) {
+        // MODO A Configuration
         html += `
             <div class="form-group highlight-group" style="margin-bottom: 2rem;">
                 <label for="globalCat2">Porcentaje Global Categoría 2 (%):</label>
-                <input type="number" id="globalCat2" step="any" placeholder="Ej: 15" style="max-width:200px;">
+                <input type="number" id="globalCat2" step="any" placeholder="Ej: 15" style="max-width:300px;">
                 <small>Categoría 1 será calculado automáticamente.</small>
+            </div>
+        `;
+    } else {
+        // MODO B Target Configuration (Optional)
+        html += `
+            <div class="form-group highlight-group" style="margin-bottom: 2rem; background: rgba(212, 172, 74, 0.1); border-color: rgba(212, 172, 74, 0.3);">
+                <label for="targetTotalKg" style="color: var(--accent-brown);">Total Kilos Muestreados (Opcional):</label>
+                <input type="number" id="targetTotalKg" step="any" placeholder="Ej: 1500" style="max-width:300px;">
+                <small style="color: var(--warning);">Utilizado para comprobación exacta de sumatoria.</small>
             </div>
         `;
     }
@@ -100,7 +110,7 @@ function renderForm() {
     }
     html += `</tbody></table>`;
 
-    // Table 2: Nacional (Otros Conceptos)
+    // Table 2: Nacional 
     let tituloNacional = isModeB ? "Nacional" : "% Nacional";
     html += `
         <table class="input-table" style="margin-top: 1.5rem;">
@@ -124,8 +134,13 @@ function renderForm() {
     sumItems.forEach(el => {
         el.addEventListener("input", performLiveSumCheck);
     });
+    
+    // Attach listener for Mode B Target Check
+    const targetKgInput = document.getElementById("targetTotalKg");
+    if (targetKgInput) {
+        targetKgInput.addEventListener("input", performLiveSumCheck);
+    }
 
-    // Run first check
     performLiveSumCheck();
 }
 
@@ -137,15 +152,12 @@ function performLiveSumCheck() {
         currentSum += val;
     });
 
-    // Handle floating point weirdness safely rounding to 2 decimals for check
     let roundedSum = Math.round(currentSum * 100) / 100;
     liveSumTotal.innerText = formatNumber(roundedSum);
 
     if (!isModeB) {
         // MODO A (Foolproof 100%)
         liveSumUnit.innerText = "%";
-        
-        // Let's enable checking around 99.99 to 100.01
         if (roundedSum === 0) {
             sumCheckContainer.className = "sum-check-box";
             sumWarning.innerText = "Ingresa los porcentajes. Deben sumar exactamente 100%";
@@ -168,12 +180,41 @@ function performLiveSumCheck() {
             btnCalculate.disabled = true;
         }
     } else {
-        // MODO B (Unlimited kg)
+        // MODO B
         liveSumUnit.innerText = " Kg";
-        sumCheckContainer.className = "sum-check-box status-ok";
-        sumWarning.innerText = "Kilogramos sumados libres.";
-        sumWarning.style.color = "var(--success)";
-        btnCalculate.disabled = (roundedSum === 0);
+        let targetKgInput = document.getElementById("targetTotalKg");
+        let targetKg = targetKgInput ? parseFloat(targetKgInput.value) || 0 : 0;
+
+        if (targetKg > 0) {
+            // Evaluacion contra el "Source of truth" provisto
+            if (roundedSum === 0) {
+                sumCheckContainer.className = "sum-check-box";
+                sumWarning.innerText = `Ingresa los kilos. Deben sumar exactamente el objetivo de ${targetKg} Kg`;
+                sumWarning.style.color = "var(--text-muted)";
+                btnCalculate.disabled = true;
+            } else if (Math.abs(roundedSum - targetKg) < 0.05) {
+                sumCheckContainer.className = "sum-check-box status-ok";
+                sumWarning.innerText = `¡Sumatoria validada contra el objetivo! (${targetKg} Kg)`;
+                sumWarning.style.color = "var(--success)";
+                btnCalculate.disabled = false;
+            } else {
+                sumCheckContainer.className = "sum-check-box status-error";
+                let diff = Math.round((targetKg - roundedSum)*100)/100;
+                if (diff > 0) {
+                    sumWarning.innerText = `Faltan ${diff} Kg para alcanzar la meta de ${targetKg} Kg.`;
+                } else {
+                    sumWarning.innerText = `Te has excedido por ${Math.abs(diff)} Kg de la meta.`;
+                }
+                sumWarning.style.color = "var(--danger)";
+                btnCalculate.disabled = true;
+            }
+        } else {
+            // Libre sin objetivo
+            sumCheckContainer.className = "sum-check-box status-ok";
+            sumWarning.innerText = "Kilogramos sumados libres (Sin objetivo definido).";
+            sumWarning.style.color = "var(--success)";
+            btnCalculate.disabled = (roundedSum === 0);
+        }
     }
 }
 
@@ -408,12 +449,16 @@ function calculateEstimate() {
             }
         });
 
-        let baseDivisor = totalKgMuestreados === 0 ? 1 : totalKgMuestreados;
+        // Use strict target Kg if provided, else use the raw sum
+        let targetKgInput = document.getElementById("targetTotalKg");
+        let targetKg = targetKgInput ? parseFloat(targetKgInput.value) || 0 : 0;
+        let baseDivisor = (targetKg > 0) ? targetKg : (totalKgMuestreados === 0 ? 1 : totalKgMuestreados);
+
         let resultado = sumaTotalValores / baseDivisor;
 
         resultsBody.innerHTML = resultsHtml;
         totalMoneyValueEl.innerText = formatCurrency(sumaTotalValores);
-        totalDivisorValueEl.innerText = formatNumber(totalKgMuestreados);
+        totalDivisorValueEl.innerText = formatNumber(baseDivisor);
         finalPriceEl.innerText = formatCurrency(resultado);
     }
 }
