@@ -7,8 +7,12 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    
     <!-- SheetJS for Excel Reading -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- HTML2PDF for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
     <div class="app-container">
@@ -18,7 +22,7 @@
                 <h1>Valoración Ponderada de <span>Aguacate</span></h1>
                 <p>Módulo de cálculo de Resultado por Kilo</p>
             </div>
-            <div style="display: flex; gap: 10px;">
+            <div class="header-buttons">
                 <!-- Updated button to fit the soft avocado theme -->
                 <button id="btnUploadExcel" class="btn-yellow">Subir Excel</button>
                 <button id="btnEditPrices" class="btn-primary">Ver/Editar Precios</button>
@@ -60,45 +64,60 @@
 
             <!-- Right Column: Results -->
             <section class="results-panel glass-panel">
-                <h2>Resumen de Valoración</h2>
+                
+                <!-- This specific div will be cloned and printed into PDF to preserve clean outputs -->
+                <div id="pdfPrintArea" style="background:var(--card-bg); border-radius:12px; padding:1.5rem; border:1px solid var(--border-glass);">
+                    <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--accent-brown); border-bottom: 2px solid var(--accent-primary); padding-bottom:0.5rem;">Resumen de Valoración</h2>
 
-                <div class="results-metadata" style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.95rem;">
-                    <p><strong>Modo de Entrada Utilizado:</strong> <span id="metaMode">-</span></p>
-                    <p id="metaConfigRow" style="display: none;"><strong>Datos de Configuración:</strong> <span id="metaConfig">-</span></p>
-                </div>
+                    <div class="results-metadata" style="margin-top: 1rem; margin-bottom: 1rem; color: var(--text-muted); font-size: 0.95rem;">
+                        <p><strong>Modo de Entrada Utilizado:</strong> <span id="metaMode">-</span></p>
+                        <p id="metaConfigRow" style="display: none;"><strong>Datos de Configuración:</strong> <span id="metaConfig">-</span></p>
+                        <p><strong>Fecha del Reporte:</strong> <span id="reportDate">-</span></p>
+                    </div>
 
-                <div class="results-summary" id="resultsSummary">
-                    <div class="summary-card">
-                        <h3 style="color: var(--text-main); font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Resultado por Kilo</h3>
-                        <p id="finalPrice" class="price-big" style="color: var(--warning);">$0.00</p>
+                    <div class="results-summary" id="resultsSummary" style="margin-bottom: 1.5rem;">
+                        <div class="summary-card">
+                            <h3 style="color: var(--text-main); font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Resultado por Kilo</h3>
+                            <p id="finalPrice" class="price-big" style="color: var(--warning);">$0.00</p>
+                        </div>
+                    </div>
+
+                    <div class="results-table-container">
+                        <table id="resultsTable">
+                            <thead>
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th id="thAmount">Cantidad</th>
+                                    <th>Precio/Kg</th>
+                                    <th style="text-align:right;">Total Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsBody">
+                                <!-- Injected via JS -->
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3" style="text-align: right;">Suma Total Valores:</th>
+                                    <th id="totalMoneyValue" style="text-align:right;">$0.00</th>
+                                </tr>
+                                <tr>
+                                    <th colspan="3" style="text-align: right;">Base Divisor (<span id="baseDivisorType">%</span>):</th>
+                                    <th id="totalDivisorValue" style="text-align:right;">0.00</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div> <!-- End Print Area -->
+
+                <!-- PDF Export Controls -->
+                <div class="export-controls" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem; background: rgba(139, 115, 85, 0.05); padding: 1.5rem; border-radius: 12px; border: 1px dashed var(--accent-brown);">
+                    <h3 style="color: var(--text-main); font-size: 1.05rem;"><svg style="width:20px; vertical-align:middle; margin-right:5px; color:var(--accent-primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> Exportar Documento</h3>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <input type="text" id="pdfFileName" placeholder="Nombre (Ej. Huerto_Las_Moras_LoteA)" style="flex: 1; min-width: 250px;">
+                        <button id="btnExportPDF" class="btn-primary" style="flex: 1; min-width: 150px; background: var(--accent-brown);" disabled>Descargar PDF</button>
                     </div>
                 </div>
-
-                <div class="results-table-container">
-                    <table id="resultsTable">
-                        <thead>
-                            <tr>
-                                <th>Concepto</th>
-                                <th id="thAmount">Cantidad</th>
-                                <th>Precio por Kg</th>
-                                <th>Total Valor</th>
-                            </tr>
-                        </thead>
-                        <tbody id="resultsBody">
-                            <!-- Injected via JS -->
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th colspan="3" style="text-align: right;">Suma Total Valores:</th>
-                                <th id="totalMoneyValue">$0.00</th>
-                            </tr>
-                            <tr>
-                                <th colspan="3" style="text-align: right;">Base Divisor (<span id="baseDivisorType">%</span>):</th>
-                                <th id="totalDivisorValue">0.00</th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
+                
             </section>
         </main>
     </div>

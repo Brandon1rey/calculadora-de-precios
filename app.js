@@ -29,6 +29,7 @@ const resultsBody = document.getElementById("resultsBody");
 const metaModeEl = document.getElementById("metaMode");
 const metaConfigRow = document.getElementById("metaConfigRow");
 const metaConfigEl = document.getElementById("metaConfig");
+const reportDateEl = document.getElementById("reportDate");
 
 // Live Sum Elements
 const sumCheckContainer = document.getElementById("sumCheckContainer");
@@ -50,12 +51,19 @@ const excelFileInput = document.getElementById("excelFileInput");
 const fileNameDisplay = document.getElementById("fileNameDisplay");
 const btnProcessExcel = document.getElementById("btnProcessExcel");
 
+// PDF Nodes
+const btnExportPDF = document.getElementById("btnExportPDF");
+const pdfFileName = document.getElementById("pdfFileName");
+const pdfPrintArea = document.getElementById("pdfPrintArea");
+
 let loadedExcelData = null;
 
 function init() {
     renderForm();
     buildPriceEditor();
     setupEventListeners();
+    let today = new Date();
+    reportDateEl.innerText = today.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit' });
 }
 
 function renderForm() {
@@ -186,7 +194,6 @@ function performLiveSumCheck() {
         let targetKg = targetKgInput ? parseFloat(targetKgInput.value) || 0 : 0;
 
         if (targetKg > 0) {
-            // Evaluacion contra el "Source of truth" provisto
             if (roundedSum === 0) {
                 sumCheckContainer.className = "sum-check-box";
                 sumWarning.innerText = `Ingresa los kilos. Deben sumar exactamente el objetivo de ${targetKg} Kg`;
@@ -209,7 +216,6 @@ function performLiveSumCheck() {
                 btnCalculate.disabled = true;
             }
         } else {
-            // Libre sin objetivo
             sumCheckContainer.className = "sum-check-box status-ok";
             sumWarning.innerText = "Kilogramos sumados libres (Sin objetivo definido).";
             sumWarning.style.color = "var(--success)";
@@ -285,15 +291,9 @@ function setupEventListeners() {
     });
 
     btnSavePrices.addEventListener("click", () => {
-        mainCalibersCat1.forEach(c => {
-            currentPrices.cat1[c] = parseFloat(document.getElementById(`edit_cat1_${c}`).value) || 0;
-        });
-        mainCalibersCat2.forEach(c => {
-            currentPrices.cat2[c] = parseFloat(document.getElementById(`edit_cat2_${c}`).value) || 0;
-        });
-        otherConcepts.forEach(o => {
-            currentPrices.others[o] = parseFloat(document.getElementById(`edit_oth_${o}`).value) || 0;
-        });
+        mainCalibersCat1.forEach(c => { currentPrices.cat1[c] = parseFloat(document.getElementById(`edit_cat1_${c}`).value) || 0; });
+        mainCalibersCat2.forEach(c => { currentPrices.cat2[c] = parseFloat(document.getElementById(`edit_cat2_${c}`).value) || 0; });
+        otherConcepts.forEach(o => { currentPrices.others[o] = parseFloat(document.getElementById(`edit_oth_${o}`).value) || 0; });
         modal.style.display = "none";
         alert("Precios guardados.");
     });
@@ -313,7 +313,6 @@ function setupEventListeners() {
 
     btnProcessExcel.addEventListener("click", () => {
         if (!loadedExcelData || loadedExcelData.length === 0) return;
-
         let actualizados = 0;
         loadedExcelData.forEach(row => {
             let keys = Object.keys(row);
@@ -329,29 +328,43 @@ function setupEventListeners() {
 
             if (concepto.includes("CAT 1")) {
                 let cal = concepto.split(" ")[0];
-                if (currentPrices.cat1[cal] !== undefined) {
-                    currentPrices.cat1[cal] = precio;
-                    actualizados++;
-                }
+                if (currentPrices.cat1[cal] !== undefined) { currentPrices.cat1[cal] = precio; actualizados++; }
             } else if (concepto.includes("CAT 2")) {
                 let cal = concepto.split(" ")[0];
-                if (currentPrices.cat2[cal] !== undefined) {
-                    currentPrices.cat2[cal] = precio;
-                    actualizados++;
-                }
+                if (currentPrices.cat2[cal] !== undefined) { currentPrices.cat2[cal] = precio; actualizados++; }
             } else {
                 let matched = false;
                 otherConcepts.forEach(o => {
-                    if (concepto.includes(o)) {
-                        currentPrices.others[o] = precio;
-                        matched = true;
-                    }
+                    if (concepto.includes(o)) { currentPrices.others[o] = precio; matched = true; }
                 });
                 if(matched) actualizados++;
             }
         });
         alert(`¡Éxito! Se actualizaron ${actualizados} precios basado en el archivo Excel.`);
         excelModal.style.display = "none";
+    });
+
+    // PDF Export functionality
+    btnExportPDF.addEventListener("click", () => {
+        let uName = pdfFileName.value.trim();
+        let fileName = uName ? `${uName}.pdf` : `Reporte_Valoracion_Aguacate_${Date.now()}.pdf`;
+
+        // Configure options
+        let opt = {
+            margin:       10,
+            filename:     fileName,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, logging: false },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        // Fire export
+        html2pdf().set(opt).from(pdfPrintArea).save().then(() => {
+            // Success
+        }).catch((err) => {
+            console.error("PDF Export error: ", err);
+            alert("Hubo un error al exportar el PDF. Por favor intenta de nuevo.");
+        });
     });
 }
 
@@ -362,6 +375,10 @@ function calculateEstimate() {
     let resultsHtml = "";
     let sumaTotalValores = 0;
     let totalKgMuestreados = 0;
+
+    // Refresh Date
+    let today = new Date();
+    reportDateEl.innerText = today.toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit' });
 
     if (!isModeB) {
         // MODO A
@@ -381,7 +398,7 @@ function calculateEstimate() {
                 let pCat1 = currentPrices.cat1[c] || 0;
                 let totalC1 = vCat1 * pCat1;
                 sumaTotalValores += totalC1;
-                resultsHtml += `<tr><td>${c} CAT 1 USA</td><td>${formatNumber(vCat1)}%</td><td>${formatCurrency(pCat1)}</td><td>${formatCurrency(totalC1)}</td></tr>`;
+                resultsHtml += `<tr><td>${c} CAT 1 USA</td><td>${formatNumber(vCat1)}%</td><td>${formatCurrency(pCat1)}</td><td style="text-align:right;">${formatCurrency(totalC1)}</td></tr>`;
                 
                 // Cat 2
                 if (mainCalibersCat2.includes(c)) {
@@ -389,7 +406,7 @@ function calculateEstimate() {
                     let pCat2 = currentPrices.cat2[c] || 0;
                     let totalC2 = vCat2 * pCat2;
                     sumaTotalValores += totalC2;
-                    resultsHtml += `<tr><td>${c} CAT 2 USA</td><td>${formatNumber(vCat2)}%</td><td>${formatCurrency(pCat2)}</td><td>${formatCurrency(totalC2)}</td></tr>`;
+                    resultsHtml += `<tr><td>${c} CAT 2 USA</td><td>${formatNumber(vCat2)}%</td><td>${formatCurrency(pCat2)}</td><td style="text-align:right;">${formatCurrency(totalC2)}</td></tr>`;
                 }
             }
         });
@@ -400,7 +417,7 @@ function calculateEstimate() {
                 let priceOther = currentPrices.others[o] || 0;
                 let totalO = val * priceOther;
                 sumaTotalValores += totalO;
-                resultsHtml += `<tr><td>${o}</td><td>${formatNumber(val)}%</td><td>${formatCurrency(priceOther)}</td><td>${formatCurrency(totalO)}</td></tr>`;
+                resultsHtml += `<tr><td>${o}</td><td>${formatNumber(val)}%</td><td>${formatCurrency(priceOther)}</td><td style="text-align:right;">${formatCurrency(totalO)}</td></tr>`;
             }
         });
 
@@ -423,7 +440,7 @@ function calculateEstimate() {
                 let price = currentPrices.cat1[c] || 0;
                 let total = kg * price;
                 sumaTotalValores += total;
-                resultsHtml += `<tr><td>${c} CAT 1 USA</td><td>${formatNumber(kg)} Kg</td><td>${formatCurrency(price)}</td><td>${formatCurrency(total)}</td></tr>`;
+                resultsHtml += `<tr><td>${c} CAT 1 USA</td><td>${formatNumber(kg)} Kg</td><td>${formatCurrency(price)}</td><td style="text-align:right;">${formatCurrency(total)}</td></tr>`;
             }
         });
 
@@ -434,7 +451,7 @@ function calculateEstimate() {
                 let price = currentPrices.cat2[c] || 0;
                 let total = kg * price;
                 sumaTotalValores += total;
-                resultsHtml += `<tr><td>${c} CAT 2 USA</td><td>${formatNumber(kg)} Kg</td><td>${formatCurrency(price)}</td><td>${formatCurrency(total)}</td></tr>`;
+                resultsHtml += `<tr><td>${c} CAT 2 USA</td><td>${formatNumber(kg)} Kg</td><td>${formatCurrency(price)}</td><td style="text-align:right;">${formatCurrency(total)}</td></tr>`;
             }
         });
 
@@ -445,7 +462,7 @@ function calculateEstimate() {
                 let price = currentPrices.others[o] || 0;
                 let total = kg * price;
                 sumaTotalValores += total;
-                resultsHtml += `<tr><td>${o}</td><td>${formatNumber(kg)} Kg</td><td>${formatCurrency(price)}</td><td>${formatCurrency(total)}</td></tr>`;
+                resultsHtml += `<tr><td>${o}</td><td>${formatNumber(kg)} Kg</td><td>${formatCurrency(price)}</td><td style="text-align:right;">${formatCurrency(total)}</td></tr>`;
             }
         });
 
@@ -461,6 +478,9 @@ function calculateEstimate() {
         totalDivisorValueEl.innerText = formatNumber(baseDivisor);
         finalPriceEl.innerText = formatCurrency(resultado);
     }
+    
+    // Enable PDF download after calculation
+    btnExportPDF.disabled = false;
 }
 
 init();
