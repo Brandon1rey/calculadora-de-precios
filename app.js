@@ -226,28 +226,36 @@ function performLiveSumCheck() {
 }
 
 function buildPriceEditor() {
-    let html = "";
-    html += `<div class="price-section"><h3>Categoría 1</h3><div class="price-grid">`;
+    let html = `
+        <table class="input-table" style="margin-bottom: 0;">
+            <thead>
+                <tr>
+                    <th>Concepto</th>
+                    <th style="text-align: right;">Precio/Kg ($)</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    html += `<tr><td colspan="2" class="sub-header">Categoría 1</td></tr>`;
     mainCalibersCat1.forEach(c => {
         let val = currentPrices.cat1[c] || 0;
-        html += `<div class="form-group"><label>Cal ${c}</label><input type="number" id="edit_cat1_${c}" step="any" value="${val}"></div>`;
+        html += `<tr><td>Cal ${c}</td><td><input type="number" id="edit_cat1_${c}" step="any" value="${val}"></td></tr>`;
     });
-    html += `</div></div>`;
     
-    html += `<div class="price-section"><h3>Categoría 2</h3><div class="price-grid">`;
+    html += `<tr><td colspan="2" class="sub-header">Categoría 2</td></tr>`;
     mainCalibersCat2.forEach(c => {
         let val = currentPrices.cat2[c] || 0;
-        html += `<div class="form-group"><label>Cal ${c}</label><input type="number" id="edit_cat2_${c}" step="any" value="${val}"></div>`;
+        html += `<tr><td>Cal ${c}</td><td><input type="number" id="edit_cat2_${c}" step="any" value="${val}"></td></tr>`;
     });
-    html += `</div></div>`;
     
-    html += `<div class="price-section"><h3>Nacional / Otros</h3><div class="price-grid">`;
+    html += `<tr><td colspan="2" class="sub-header">Nacional / Otros</td></tr>`;
     otherConcepts.forEach(o => {
         let val = currentPrices.others[o] || 0;
-        html += `<div class="form-group"><label>${o}</label><input type="number" id="edit_oth_${o}" step="any" value="${val}"></div>`;
+        html += `<tr><td>${o}</td><td><input type="number" id="edit_oth_${o}" step="any" value="${val}"></td></tr>`;
     });
-    html += `</div></div>`;
-
+    
+    html += `</tbody></table>`;
     priceEditorDiv.innerHTML = html;
 }
 
