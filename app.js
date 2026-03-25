@@ -369,44 +369,92 @@ function setupEventListeners() {
         excelModal.style.display = "none";
     });
 
-    // Bulletproof PDF Export functionality
+    // Bulletproof PDF Export functionality (Plain Text Table)
     btnExportPDF.addEventListener("click", () => {
         let uName = pdfFileName.value.trim();
         let fileName = uName ? `${uName}.pdf` : `Reporte_Valoracion_Aguacate_${Date.now()}.pdf`;
 
-        // UI Feedback
         let originalText = btnExportPDF.innerText;
         btnExportPDF.innerText = "Exportando...";
         btnExportPDF.disabled = true;
 
-        // Force desktop width for high-quality structured print even on phones
-        let originalWidth = pdfPrintArea.style.width;
-        let originalMaxWidth = pdfPrintArea.style.maxWidth;
-        let originalBackground = pdfPrintArea.style.background;
-        
-        pdfPrintArea.style.width = "850px";
-        pdfPrintArea.style.maxWidth = "850px";
-        pdfPrintArea.style.background = "#ffffff"; // Force solid white for PDF
+        // Create a hidden, completely plain white UI for the PDF
+        const plainDiv = document.createElement("div");
+        plainDiv.style.position = "absolute";
+        plainDiv.style.left = "-9999px";
+        plainDiv.style.top = "0";
+        plainDiv.style.width = "800px";
+        plainDiv.style.background = "#ffffff";
+        plainDiv.style.color = "#000000";
+        plainDiv.style.fontFamily = "Arial, sans-serif";
+        plainDiv.style.padding = "40px";
+
+        // Extract clean rows from current results table
+        let cleanRows = "";
+        document.querySelectorAll("#resultsBody tr").forEach(tr => {
+            let tds = tr.querySelectorAll("td");
+            if (tds.length === 4) {
+                cleanRows += `
+                <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">${tds[0].innerText}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">${tds[1].innerText}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">${tds[2].innerText}</td>
+                    <td style="padding: 10px; border-bottom: 1px solid #ddd; text-align: right;">${tds[3].innerText}</td>
+                </tr>`;
+            }
+        });
+
+        plainDiv.innerHTML = `
+            <div style="margin-bottom: 30px;">
+                <h1 style="font-size: 24px; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">Reporte de Valoración de Aguacate</h1>
+                <p><strong>Fecha:</strong> ${reportDateEl.innerText}</p>
+                <p><strong>Configuración:</strong> ${metaModeEl.innerText}</p>
+                ${!isModeB && metaConfigEl.innerText !== "-" ? `<p><strong>Detalle:</strong> ${metaConfigEl.innerText}</p>` : ''}
+            </div>
+            
+            <div style="margin-bottom: 30px; font-size: 22px; font-weight: bold;">
+                Resultado por Kilo: ${finalPriceEl.innerText}
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                <thead>
+                    <tr>
+                        <th style="padding: 10px; border-bottom: 2px solid #000; text-align: left;">Concepto</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #000; text-align: left;">Cantidad</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #000; text-align: left;">Precio/Kg</th>
+                        <th style="padding: 10px; border-bottom: 2px solid #000; text-align: right;">Total Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${cleanRows}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="3" style="padding: 12px 10px; border-top: 2px solid #000; text-align: right;">Suma Total Valores:</th>
+                        <th style="padding: 12px 10px; border-top: 2px solid #000; text-align: right;">${totalMoneyValueEl.innerText}</th>
+                    </tr>
+                    <tr>
+                        <th colspan="3" style="padding: 12px 10px; text-align: right;">Base Divisor (${isModeB ? 'Kg' : '%'}):</th>
+                        <th style="padding: 12px 10px; text-align: right;">${totalDivisorValueEl.innerText}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        `;
+
+        document.body.appendChild(plainDiv);
 
         setTimeout(() => {
-            html2canvas(pdfPrintArea, {
+            html2canvas(plainDiv, {
                 scale: 2,
                 useCORS: true,
                 backgroundColor: "#ffffff"
             }).then(canvas => {
-                // Restore UI
-                pdfPrintArea.style.width = originalWidth;
-                pdfPrintArea.style.maxWidth = originalMaxWidth;
-                pdfPrintArea.style.background = originalBackground;
-
-                // Build PDF
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 const imgData = canvas.toDataURL('image/png');
                 
                 const pdfWidth = pdf.internal.pageSize.getWidth();
-                // margin of 10mm each side
-                const margin = 10;
+                const margin = 15; // 15mm margin
                 const printWidth = pdfWidth - (margin * 2);
 
                 const imgProps = pdf.getImageProperties(imgData);
@@ -415,19 +463,17 @@ function setupEventListeners() {
                 pdf.addImage(imgData, 'PNG', margin, margin, printWidth, printHeight);
                 pdf.save(fileName);
 
+                document.body.removeChild(plainDiv);
                 btnExportPDF.innerText = originalText;
                 btnExportPDF.disabled = false;
             }).catch(err => {
                 console.error("PDF Export error: ", err);
-                // Recovery 
-                pdfPrintArea.style.width = originalWidth;
-                pdfPrintArea.style.maxWidth = originalMaxWidth;
-                pdfPrintArea.style.background = originalBackground;
+                if(document.body.contains(plainDiv)) document.body.removeChild(plainDiv);
                 btnExportPDF.innerText = originalText;
                 btnExportPDF.disabled = false;
-                alert("Hubo un error al crear el PDF. Esto puede suceder por bloqueos de navegador. Intenta reiniciar la página.");
+                alert("Hubo un error al crear el PDF. Intenta reiniciar la página.");
             });
-        }, 150); // slight delay to allow CSS reflow
+        }, 150);
     });
 }
 
